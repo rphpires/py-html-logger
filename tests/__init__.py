@@ -1,0 +1,1 @@
+# The file /py-html-logger/py-html-logger/tests/__init__.py is intentionally left blank.
