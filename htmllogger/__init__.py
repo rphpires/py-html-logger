@@ -6,8 +6,20 @@ _logger = Logger()
 # Export the main functions
 
 
-def log(message, color="white"):
-    _logger.log(message, color)
+def log(message, color="white", tag="log"):
+    _logger.log(message, color, tag)
+
+
+def info(message, color="white", tag="info"):
+    _logger.info(message, color, tag)
+
+
+def debug(message, color="white", tag="debug"):
+    _logger.debug(message, color, tag)
+
+
+def warning(message, color="gold", tag="warning"):
+    _logger.warning(message, color, tag)
 
 
 def error(message):

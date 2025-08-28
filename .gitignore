@@ -1,6 +1,7 @@
 
 _deploy.ps1
 py_html_logger.egg-info/
+.flake8 
 
 # Build and distribution
 dist/

@@ -1,146 +1,145 @@
 # HTML Logger
 
-Uma biblioteca Python para geração de logs em HTML com suporte a cores, rotação de arquivos e filtros via JavaScript.
+A Python library for generating HTML logs with support for colors, file rotation, and JavaScript filters.
 
-## Características
+## Features
 
-- ✅ Logs coloridos em formato HTML
-- ✅ Rotaão automática de arquivos
-- ✅ Interface limpa com filtros JavaScript integrados
-- ✅ Thread-safe e de alta performance
-- ✅ Suporte a exceções com traceback completo
-- ✅ Configuração flexível de tamanho e quantidade de arquivos
+- ✅ Colored logs in HTML format
+- ✅ Automatic file rotation
+- ✅ Clean interface with integrated JavaScript filters
+- ✅ Thread-safe and high performance
+- ✅ Exception support with full traceback
+- ✅ Flexible configuration for file size and quantity
 
-## Instalação
+## Installation
 
 ```bash
 pip install py-html-logger
 ```
 
-## Uso Básico
+## Basic Usage
 
 ```python
 from htmllogger import log, error, report_exception
 
-# Mensagens simples
-log("Mensagem informativa normal")
-log("Mensagem em azul", color="blue")
+# Simple messages
+log("Normal informative message")
+log("Blue message", color="blue")
 
-# Mensagens de erro
-error("Esta é uma mensagem de erro")
+# Error messages
+error("This is an error message")
 
-# Registrar exceções
+# Log exceptions
 try:
-    # Seu código aqui
-    raise ValueError("Erro exemplo")
+    # Your code here
+    raise ValueError("Example error")
 except Exception as e:
     report_exception(e)
 ```
 
-## Configuração
+## Configuration
 
 ```python
 from htmllogger import config
 
-# Personalize as configurações do logger
+# Customize logger settings
 config(
-    max_files=15,           # Número máximo de arquivos de log
-    max_size=5000000,       # Tamanho máximo por arquivo (5MB)
-    main_filename="log.html", # Nome do arquivo principal
-    log_dir="logs"          # Diretório para os logs
+    max_files=15,           # Maximum number of log files
+    max_size=5000000,       # Maximum size per file (5MB)
+    main_filename="log.html", # Main file name
+    log_dir="logs"          # Directory for logs
 )
 ```
 
-## Estrutura de Arquivos
+## File Structure
 
-Os logs são armazenados no diretório especificado (padrão: `logs/`) com a seguinte estrutura:
+Logs are stored in the specified directory (default: `logs/`) with the following structure:
 
 ```
 logs/
-└── log.html (arquivo atual)
-└── 2023-10-05_12-30-45_log.html (arquivo rotacionado)
-└── 2023-10-05_10-15-32_log.html (arquivo rotacionado)
+└── log.html (current file)
+└── 2023-10-05_12-30-45_log.html (rotated file)
+└── 2023-10-05_10-15-32_log.html (rotated file)
 ```
 
-## Filtros JavaScript Integrados
+## Integrated JavaScript Filters
 
-Os arquivos HTML gerados incluem recursos de filtro para facilitar a análise:
+Generated HTML files include filtering capabilities to facilitate analysis:
 
-- Filtro por texto
-- Filtro por nível (cor)
-- Filtro por período
+- Text filtering
+- Level (color) filtering
+- Time period filtering
 
-## Exemplo Completo
+## Complete Example
 
 ```python
 from htmllogger import log, error, report_exception, config
 
-# Configurar o logger
+# Configure logger
 config(
     max_files=10,
     max_size=2000000,  # 2MB
     log_dir="my_logs"
 )
 
-# Registrar diferentes tipos de mensagens
-log("Iniciando aplicação", color="green")
-log("Processando dados...", color="blue")
+# Log different types of messages
+log("Starting application", color="green")
+log("Processing data...", color="blue")
 
 for i in range(100):
-    log(f"Processando item {i}")
+    log(f"Processing item {i}")
 
 try:
-    # Código que pode gerar erro
-    resultado = 10 / 0
+    # Code that might raise an error
+    result = 10 / 0
 except Exception as e:
-    error("Divisão por zero detectada")
+    error("Division by zero detected")
     report_exception(e)
 
-log("Aplicação finalizada", color="green")
+log("Application finished", color="green")
 ```
 
 ## API Reference
 
 ### log(message, color="white")
-Registra uma mensagem com a cor especificada.
+Logs a message with the specified color.
 
 ### error(message)
-Registra uma mensagem de erro (em vermelho).
+Logs an error message (in red).
 
 ### report_exception(exc, timeout=None)
-Registra uma exceção com seu traceback completo.
+Logs an exception with its full traceback.
 
 ### config(**kwargs)
-Configura as opções do logger:
-- `max_files`: Número máximo de arquivos a manter
-- `max_size`: Tamanho máximo em bytes por arquivo
-- `main_filename`: Nome do arquivo de log principal
-- `log_dir`: Diretório onde os logs serão armazenados
+Configures logger options:
+- `max_files`: Maximum number of files to maintain
+- `max_size`: Maximum size in bytes per file
+- `main_filename`: Main log file name
+- `log_dir`: Directory where logs will be stored
 
-## Desenvolvimento
+## Development
 
-Para contribuir com o projeto:
+To contribute to the project:
 
-1. Faça um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Suporte
+## Support
 
-Se você encontrar problemas ou tiver dúvidas:
+If you encounter issues or have questions:
 
-1. Consulte a [documentação](https://github.com/rphpires/py-html-logger)
-2. Abra uma [issue](https://github.com/rphpires/py-html-logger/issues)
-3. Entre em contato: rphspires@gmail.com
+1. Check the [documentation](https://github.com/rphpires/py-html-logger)
+2. Open an [issue](https://github.com/rphpires/py-html-logger/issues)
+3. Contact: rphspires@gmail.com
 
-## Licença
+## License
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Agradecimentos
+## Acknowledgments
 
-- Desenvolvido por Raphael Pires
-- Inspirado pela necessidade de logs visualmente ricos para debugging
-- Contribuições são bem-vindas!
+- Developed by Raphael Pires
+- Inspired by

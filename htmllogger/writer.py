@@ -1,3 +1,4 @@
+# writer.py
 import os
 import datetime
 import glob
@@ -24,13 +25,22 @@ class LogWriter:
 
         # mantém apenas os N arquivos mais recentes
         files = sorted(glob.glob(os.path.join(
-            config.log_dir, "*.html")), key=os.path.getctime)
+            config.log_dir, "*.html")), key=os.path.getctime, reverse=True)
         if len(files) > config.max_files:
-            os.remove(files[0])
+            for old_file in files[config.max_files:]:
+                os.remove(old_file)
 
     def write(self, line: str):
         if os.path.exists(self.filename) and os.path.getsize(self.filename) >= config.max_size:
             self._rotate_file()
 
-        with open(self.filename, "a", encoding="utf-8") as f:
-            f.write(line)
+        # Lê o conteúdo atual do arquivo
+        with open(self.filename, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Substitui o marcador pelo conteúdo novo + marcador
+        new_content = content.replace("<!-- LOG_CONTENT -->", "\n" + line + "<!-- LOG_CONTENT -->")
+
+        # Escreve o conteúdo atualizado de volta no arquivo
+        with open(self.filename, "w", encoding="utf-8") as f:
+            f.write(new_content)
