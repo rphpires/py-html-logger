@@ -6,7 +6,7 @@ import time
 # Configure logger
 config(
     max_files=5,
-    max_size=1000000,
+    max_size=2_000_000,
     log_dir="example_logs",
     main_filename="example.html"
 )

@@ -1,99 +1,168 @@
-# core.py
-import threading
-import queue
+# core.py - Core com detecção de modo filtro
 import datetime
 import time
 import traceback
 import atexit
+import threading
+import os
 from .writer import LogWriter
 
 
 class Logger:
     def __init__(self):
-        self.queue = queue.Queue()
         self.writer = LogWriter()
-        self._stop_event = threading.Event()
-        self.thread = threading.Thread(target=self._worker, daemon=True)
-        self.thread.start()
+
+        # Cache simples de tags (thread-safe básico)
         self.used_tags = set(["log", "info", "debug", "warning", "error", "exception"])
+        self._tags_lock = threading.Lock()
+
+        # Cache de timestamp simples
+        self._last_timestamp = None
+        self._last_timestamp_time = 0
+
+        # Monitor de arquivo para detectar modo filtro
+        self._last_filter_check = 0
+        self._monitoring_enabled = True
+
         atexit.register(self.flush)
 
-    def _worker(self):
-        while not self._stop_event.is_set():
-            try:
-                line = self.queue.get(timeout=0.01)
-                self.writer.write(line)
-                self.queue.task_done()
-            except queue.Empty:
-                continue
-            except Exception as e:
-                print(f"Error in logger worker: {e}")
-                import traceback
-                traceback.print_exc()
+    def _check_filter_mode(self):
+        """Verifica se o modo filtro foi ativado no HTML"""
+        current_time = time.time()
 
-    def __handle_msg(self, message, color="white", tag=None):
-        tag_attr = ""
-        if tag:
+        # Verifica apenas a cada 1 segundo para não impactar performance
+        if current_time - self._last_filter_check < 1.0:
+            return
+
+        self._last_filter_check = current_time
+
+        try:
+            # Lê o arquivo HTML para verificar o estado do filtro
+            if os.path.exists(self.writer.filename):
+                with open(self.writer.filename, "r", encoding="utf-8") as f:
+                    # Lê apenas os últimos 2000 bytes para encontrar o sinal
+                    f.seek(0, 2)  # Vai para o final
+                    file_size = f.tell()
+
+                    read_size = min(2000, file_size)
+                    f.seek(file_size - read_size)
+                    tail_content = f.read()
+
+                    # Procura pelo sinal do JavaScript
+                    if 'data-filter-active="true"' in tail_content or 'FILTER_MODE:true:' in tail_content:
+                        self.writer.activate_filter_mode()
+                    elif 'data-filter-active="false"' in tail_content or 'FILTER_MODE:false:' in tail_content:
+                        self.writer.deactivate_filter_mode()
+        except:
+            # Ignora erros para não impactar o logging
+            pass
+
+    def _get_timestamp(self):
+        """Timestamp simples com cache mínimo"""
+        current_time = time.time()
+
+        # Cache apenas se for o mesmo milissegundo
+        if (self._last_timestamp
+                and abs(current_time - self._last_timestamp_time) < 0.001):
+            return self._last_timestamp
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        self._last_timestamp = timestamp
+        self._last_timestamp_time = current_time
+        return timestamp
+
+    def _add_tag_safe(self, tag):
+        """Adiciona tag thread-safe simples"""
+        if not tag:
+            return
+
+        with self._tags_lock:
             if isinstance(tag, str):
-                tag = [tag]
-            # Adiciona tags ao conjunto de tags usadas
-            for t in tag:
-                self.used_tags.add(t)
-            tag_attr = f" data-tags='{','.join(tag)}'"
-        ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        line = f'<br><font color="{color}"{tag_attr}>{ts} - {message}</font>'
-        self.queue.put(line)
+                self.used_tags.add(tag)
+            elif isinstance(tag, (list, tuple)):
+                self.used_tags.update(str(t) for t in tag)
 
-    def log(self, message, color, tag):
-        self.__handle_msg(message, color, tag)
+    def _format_message(self, message, tag=None):
+        """Formata mensagem com timestamp e tags"""
+        self._add_tag_safe(tag)
 
-    def info(self, message, color, tag):
-        tag_attr = ""
-        if tag:
-            if isinstance(tag, str):
-                tag = [tag]
-            # Adiciona tags ao conjunto de tags usadas
-            for t in tag:
-                self.used_tags.add(t)
-            tag_attr = f" data-tags='{','.join(tag)}'"
-        ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        line = f'<br>[INFO]<br><font color="{color}"{tag_attr}>{ts} - {message}</font><br>[INFO]'
-        self.queue.put(line)
+        # Timestamp
+        ts = self._get_timestamp()
 
-    def debug(self, message, color, tag):
-        self.__handle_msg(f"## DEBUG: {message}", color, tag)
+        # Monta mensagem final
+        formatted_message = f"<br>{ts} - {str(message)}"
 
-    def warning(self, message, color, tag):
-        self.__handle_msg(f"⚠️ {message}", color, tag)
+        return formatted_message
 
-    def error(self, message, tag):
-        self.__handle_msg(f"** {message}", color="red", tag=tag)
+    def log(self, message, color="white", tag="log"):
+        """Log direto usando o writer otimizado"""
+        # Verifica modo filtro ocasionalmente
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
+        formatted_message = self._format_message(message, tag)
+        self.writer.write(formatted_message, color, tag)
+
+    def info(self, message, color="white", tag="info"):
+        """Info com formatação especial"""
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
+        self._add_tag_safe(tag)
+        ts = self._get_timestamp()
+        formatted_message = f"<br>[INFO]<br>{ts} - {str(message)}<br>[INFO]"
+        self.writer.write(formatted_message, color, tag)
+
+    def debug(self, message, color="white", tag="debug"):
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
+        formatted_message = self._format_message(f"## DEBUG: {str(message)}", tag)
+        self.writer.write(formatted_message, color, tag)
+
+    def warning(self, message, color="gold", tag="warning"):
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
+        formatted_message = self._format_message(f"⚠️ {str(message)}", tag)
+        self.writer.write(formatted_message, color, tag)
+
+    def error(self, message, tag="error"):
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
+        formatted_message = self._format_message(f"** {str(message)}", tag)
+        self.writer.write(formatted_message, "red", tag)
 
     def report_exception(self, exc, timeout=None):
+        """Reporta exceção"""
+        if self._monitoring_enabled:
+            self._check_filter_mode()
+
         err = traceback.format_exc()
-        self.__handle_msg(f"**** Exception: <code>{err}</code>", color="red", tag="exception")
+        formatted_message = self._format_message(f"**** Exception: <code>{err}</code>", "exception")
+        self.writer.write(formatted_message, "red", "exception")
+
         if timeout:
             time.sleep(timeout)
 
     def flush(self):
-        """Processa todas as mensagens pendentes antes do término"""
-        self._stop_event.set()
-        self.writer.flush()  # Garante que o buffer seja escrito
+        """Flush simples"""
+        self.writer.flush()
 
-        # Processa mensagens remanescentes manualmente
-        processed_count = 0
-        while not self.queue.empty() and processed_count < 1000:
-            try:
-                line = self.queue.get_nowait()
-                self.writer.write(line)
-                self.queue.task_done()
-                processed_count += 1
-            except queue.Empty:
-                break
-
-        # Aguarda a thread terminar
-        self.thread.join(timeout=0.1)
+    def close(self):
+        """Fecha logger e finaliza arquivo HTML"""
+        self.writer.finalize_file()
 
     def get_used_tags(self):
-        """Retorna todas as tags usadas até o momento"""
-        return sorted(list(self.used_tags))
+        """Retorna tags usadas"""
+        with self._tags_lock:
+            return sorted(list(self.used_tags))
+
+    def disable_filter_monitoring(self):
+        """Desabilita monitoramento de filtros para máxima performance"""
+        self._monitoring_enabled = False
+
+    def enable_filter_monitoring(self):
+        """Habilita monitoramento de filtros"""
+        self._monitoring_enabled = True

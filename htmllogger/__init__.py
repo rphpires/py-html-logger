@@ -38,4 +38,25 @@ def config(**kwargs):
 
 
 def flush():
+    """Força escrita imediata dos logs pendentes"""
     _logger.flush()
+
+
+def close():
+    """Fecha logger e finaliza arquivo HTML adequadamente"""
+    _logger.close()
+
+
+def finalize():
+    """Finaliza arquivo HTML com tags de fechamento corretas"""
+    _logger.close()
+
+
+def disable_filter_monitoring():
+    """Desabilita monitoramento de filtros para máxima performance"""
+    _logger.disable_filter_monitoring()
+
+
+def enable_filter_monitoring():
+    """Habilita monitoramento de filtros"""
+    _logger.enable_filter_monitoring()
