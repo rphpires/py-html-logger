@@ -22,8 +22,8 @@ def warning(message, color="gold", tag="warning"):
     _logger.warning(message, color, tag)
 
 
-def error(message):
-    _logger.error(message)
+def error(message, tag="error"):
+    _logger.error(message, tag)
 
 
 def report_exception(exc, timeout=None):

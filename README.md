@@ -1,6 +1,6 @@
 # HTML Logger
 
-A Python library for generating HTML logs with support for colors, file rotation, and JavaScript filters.
+A Python library for generating HTML logs with support for colors, file rotation, tagging, and JavaScript filters.
 
 ## Features
 
@@ -10,6 +10,8 @@ A Python library for generating HTML logs with support for colors, file rotation
 - ✅ Thread-safe and high performance
 - ✅ Exception support with full traceback
 - ✅ Flexible configuration for file size and quantity
+- ✅ Tagging system for message categorization
+- ✅ Advanced filtering by tags and text content
 
 ## Installation
 
@@ -35,6 +37,23 @@ try:
     raise ValueError("Example error")
 except Exception as e:
     report_exception(e)
+```
+
+## Enhanced Tagging System
+
+The logger supports tagging messages for better organization and filtering:
+
+```python
+from htmllogger import log, info, debug, warning
+
+# Simple tagged messages
+log("User login", tag="auth")
+info("Data processed", tag="processing")
+debug("Variable value", tag="debug")
+warning("Resource low", tag="system")
+
+# Multiple tags
+log("Security event", tag=["security", "monitoring"])
 ```
 
 ## Configuration
@@ -64,16 +83,18 @@ logs/
 
 ## Integrated JavaScript Filters
 
-Generated HTML files include filtering capabilities to facilitate analysis:
+Generated HTML files include advanced filtering capabilities to facilitate analysis:
 
-- Text filtering
-- Level (color) filtering
+- Text filtering with AND/OR logic
+- Tag-based filtering
 - Time period filtering
+- Real-time highlighting of matched terms
+- Preserved original log view
 
 ## Complete Example
 
 ```python
-from htmllogger import log, error, report_exception, config
+from htmllogger import log, info, debug, warning, error, report_exception, config
 
 # Configure logger
 config(
@@ -82,12 +103,15 @@ config(
     log_dir="my_logs"
 )
 
-# Log different types of messages
-log("Starting application", color="green")
-log("Processing data...", color="blue")
+# Log with different tags and levels
+log("Application started", tag="system", color="green")
+info("Loading configuration", tag="config")
+debug("Initializing modules", tag="debug")
 
 for i in range(100):
-    log(f"Processing item {i}")
+    if i % 10 == 0:
+        log(f"Checkpoint {i}", tag="checkpoint")
+    info(f"Processing item {i}", tag="processing")
 
 try:
     # Code that might raise an error
@@ -96,13 +120,22 @@ except Exception as e:
     error("Division by zero detected")
     report_exception(e)
 
-log("Application finished", color="green")
+log("Application finished", tag="system", color="green")
 ```
 
 ## API Reference
 
-### log(message, color="white")
-Logs a message with the specified color.
+### log(message, color="white", tag=None)
+Logs a message with optional color and tag(s).
+
+### info(message, color="white", tag=None)
+Logs an informational message.
+
+### debug(message, color="white", tag=None)
+Logs a debug message.
+
+### warning(message, color="gold", tag=None)
+Logs a warning message.
 
 ### error(message)
 Logs an error message (in red).
@@ -116,6 +149,9 @@ Configures logger options:
 - `max_size`: Maximum size in bytes per file
 - `main_filename`: Main log file name
 - `log_dir`: Directory where logs will be stored
+
+### flush()
+Processes all pending messages before termination.
 
 ## Development
 
@@ -142,4 +178,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Developed by Raphael Pires
-- Inspired by
+- Inspired by the need for better log visualization and analysis tools

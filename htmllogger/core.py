@@ -15,15 +15,13 @@ class Logger:
         self._stop_event = threading.Event()
         self.thread = threading.Thread(target=self._worker, daemon=True)
         self.thread.start()
-        self.used_tags = set()  # Armazena todas as tags usadas
+        self.used_tags = set(["log", "info", "debug", "warning", "error", "exception"])
         atexit.register(self.flush)
 
     def _worker(self):
         while not self._stop_event.is_set():
             try:
-                line = self.queue.get(timeout=0.1)
-                # REMOVA esta linha: formatted_line = self.__handle_msg(line)
-                # EM VEZ DISSO, use a linha diretamente:
+                line = self.queue.get(timeout=0.01)
                 self.writer.write(line)
                 self.queue.task_done()
             except queue.Empty:
@@ -59,7 +57,7 @@ class Logger:
                 self.used_tags.add(t)
             tag_attr = f" data-tags='{','.join(tag)}'"
         ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-        line = f'<br><br><font color="{color}"{tag_attr}>{ts} - {message}</font><br>'
+        line = f'<br>[INFO]<br><font color="{color}"{tag_attr}>{ts} - {message}</font><br>[INFO]'
         self.queue.put(line)
 
     def debug(self, message, color, tag):
@@ -68,8 +66,8 @@ class Logger:
     def warning(self, message, color, tag):
         self.__handle_msg(f"⚠️ {message}", color, tag)
 
-    def error(self, message):
-        self.__handle_msg(f"** {message}", color="red", tag="error")
+    def error(self, message, tag):
+        self.__handle_msg(f"** {message}", color="red", tag=tag)
 
     def report_exception(self, exc, timeout=None):
         err = traceback.format_exc()
@@ -80,14 +78,13 @@ class Logger:
     def flush(self):
         """Processa todas as mensagens pendentes antes do término"""
         self._stop_event.set()
+        self.writer.flush()  # Garante que o buffer seja escrito
 
         # Processa mensagens remanescentes manualmente
         processed_count = 0
         while not self.queue.empty() and processed_count < 1000:
             try:
                 line = self.queue.get_nowait()
-                # REMOVA esta linha: formatted_line = self.__handle_msg(line)
-                # EM VEZ DISSO, use a linha diretamente:
                 self.writer.write(line)
                 self.queue.task_done()
                 processed_count += 1
@@ -95,7 +92,7 @@ class Logger:
                 break
 
         # Aguarda a thread terminar
-        self.thread.join(timeout=0.2)
+        self.thread.join(timeout=0.1)
 
     def get_used_tags(self):
         """Retorna todas as tags usadas até o momento"""
