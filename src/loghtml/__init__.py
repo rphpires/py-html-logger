@@ -14,13 +14,11 @@ def _handle_exit(signum=None, frame=None):
         sys.exit(0)
 
 
-# Registrar handlers para sinais (apenas em sistemas UNIX)
 if hasattr(signal, 'SIGTERM'):
     signal.signal(signal.SIGTERM, _handle_exit)
 if hasattr(signal, 'SIGINT'):
     signal.signal(signal.SIGINT, _handle_exit)
 
-# Registrar para execução na finalização normal
 atexit.register(_handle_exit)
 
 
@@ -60,6 +58,10 @@ def set_html_trace(value):
 def set_screen_trace(value):
     """Control screen trace output"""
     _logger.set_screen_trace(value)
+
+
+def set_default_tag_color(value):
+    _logger.set_default_tag_color(value)
 
 
 def config(**kwargs):

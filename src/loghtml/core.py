@@ -20,6 +20,11 @@ class Logger:
             import os
             os.system("del trace* 2> nul")
 
+    def set_default_tag_color(self, value: dict):
+        if not isinstance(value, dict):
+            raise TypeError('Invalid Type used to set default tag color.')
+        self.default_tag_color = value
+
     def set_screen_trace(self, value):
         self.screen_trace = value
 

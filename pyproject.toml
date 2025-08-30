@@ -13,7 +13,7 @@ authors = [
 license = "MIT"
 requires-python = ">=3.8"
 
-keywords = ["logging", "html", "logger", "logs", "colors", "trace"]
+keywords = ["logging", "html", "logger", "logs", "colors", "trace", "loghtml"]
 
 classifiers = [
     "Programming Language :: Python :: 3",
