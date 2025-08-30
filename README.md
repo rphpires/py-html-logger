@@ -12,6 +12,7 @@ A Python library for generating HTML logs with support for colors, file rotation
 - ✅ Flexible configuration for file size and quantity
 - ✅ Tagging system for message categorization
 - ✅ Advanced filtering by tags and text content
+- ✅ Default color mapping for specific tags
 
 ## Installation
 
@@ -22,7 +23,7 @@ pip install py-html-logger
 ## Basic Usage
 
 ```python
-from htmllogger import log, error, report_exception
+from loghtml import log, error, report_exception
 
 # Simple messages
 log("Normal informative message")
@@ -44,22 +45,34 @@ except Exception as e:
 The logger supports tagging messages for better organization and filtering:
 
 ```python
-from htmllogger import log, info, debug, warning
+from loghtml import log, info, debug, warning
 
-# Simple tagged messages
+# Tagged messages
 log("User login", tag="auth")
 info("Data processed", tag="processing")
 debug("Variable value", tag="debug")
 warning("Resource low", tag="system")
+```
 
-# Multiple tags
-log("Security event", tag=["security", "monitoring"])
+## Setting Default Tag Colors
+
+You can define default colors for specific tags:
+
+```python
+from loghtml import set_default_tag_color
+
+default_tag_colors = {
+    "database": "LightGrey",
+    "connection": "LightBlue",
+    "heartbeat": "Yellow"
+}
+set_default_tag_color(default_tag_colors)
 ```
 
 ## Configuration
 
 ```python
-from htmllogger import config
+from loghtml import config
 
 # Customize logger settings
 config(
@@ -94,7 +107,7 @@ Generated HTML files include advanced filtering capabilities to facilitate analy
 ## Complete Example
 
 ```python
-from htmllogger import log, info, debug, warning, error, report_exception, config
+from loghtml import log, info, debug, warning, error, report_exception, config, set_default_tag_color
 
 # Configure logger
 config(
@@ -103,8 +116,16 @@ config(
     log_dir="my_logs"
 )
 
+# Set default tag colors
+default_tag_colors = {
+    "system": "green",
+    "processing": "cyan",
+    "checkpoint": "magenta"
+}
+set_default_tag_color(default_tag_colors)
+
 # Log with different tags and levels
-log("Application started", tag="system", color="green")
+log("Application started", tag="system")
 info("Loading configuration", tag="config")
 debug("Initializing modules", tag="debug")
 
@@ -120,24 +141,24 @@ except Exception as e:
     error("Division by zero detected")
     report_exception(e)
 
-log("Application finished", tag="system", color="green")
+log("Application finished", tag="system")
 ```
 
 ## API Reference
 
-### log(message, color="white", tag=None)
+### log(message, color=None, tag="log")
 Logs a message with optional color and tag(s).
 
-### info(message, color="white", tag=None)
+### info(message, color=None, tag="info")
 Logs an informational message.
 
-### debug(message, color="white", tag=None)
+### debug(message, color=None, tag="debug")
 Logs a debug message.
 
-### warning(message, color="gold", tag=None)
+### warning(message, color=None, tag="warning")
 Logs a warning message.
 
-### error(message)
+### error(message, tag="error")
 Logs an error message (in red).
 
 ### report_exception(exc, timeout=None)
@@ -149,6 +170,10 @@ Configures logger options:
 - `max_size`: Maximum size in bytes per file
 - `main_filename`: Main log file name
 - `log_dir`: Directory where logs will be stored
+
+### set_default_tag_color(color_dict)
+Sets default colors for specific tags:
+- `color_dict`: Dictionary mapping tag names to color values
 
 ### flush()
 Processes all pending messages before termination.
