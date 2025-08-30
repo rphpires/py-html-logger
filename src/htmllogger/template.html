@@ -103,7 +103,7 @@
     padding: 0 2px;
   }
   .log-line {
-    margin: 2px 0;
+    margin: 0;
   }
   .visible {
     display: block;
@@ -145,15 +145,20 @@
   }
   #filteredContainer .log-line {
     display: block;
-    margin: 2px 0;
+    margin: 0;
+  }
+  font { 
+    white-space: pre-wrap;
+    word-break: break-all;
+    display: block;
   }
 </style>
 
 <body>
   <div id="filterPanel" class="filter-panel">
     <div class="filter-tabs">
-      <button class="filter-tab active" data-tab="text">Filtro de Texto</button>
-      <button class="filter-tab" data-tab="type">Filtro por Tipo</button>
+      <button class="filter-tab active" data-tab="text">Text Filter</button>
+      <button class="filter-tab" data-tab="type">Filter by Tag</button>
     </div>
 
     <div id="textFilter" class="filter-content active">
@@ -170,24 +175,24 @@
 
     <div id="typeFilter" class="filter-content">
       <div id="typeFilterList" class="filter-types">
-        <!-- Checkboxes gerados dinamicamente -->
+        <!-- Checkboxes -->
       </div>
       <div class="filter-actions">
         <button id="selectAllTypes" class="filter-action-btn apply">
-          Selecionar Todos
+          Select All
         </button>
         <button id="deselectAllTypes" class="filter-action-btn clear">
-          Limpar Seleção
+          Clear Selection
         </button>
       </div>
     </div>
 
     <div class="filter-footer">
       <button id="applyFiltersBtn" class="filter-action-btn apply">
-        Aplicar
+        Apply Filters
       </button>
       <button id="clearFiltersBtn" class="filter-action-btn clear">
-        Resetar
+        Reset View
       </button>
     </div>
   </div>
@@ -197,29 +202,16 @@
       <path d="M3 4H21L14 12V20L10 22V12L3 4Z" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
-  <div id="filteredContainer"></div>
-
-  <div id="logContainer">
-    <font color="white">
-      <!-- LOG_CONTENT -->
-    </font>
-  </div>
 
   <script>
     let USED_TAGS = [];
     let activeFilters = { text: "", types: [] };
     let filterModeEnabled = false;
 
-    // Função para notificar Python sobre mudança de modo (via arquivo de controle)
     function notifyFilterModeChange(enabled) {
-      // Cria um arquivo de sinalização que o Python pode monitorar
-      // Como não podemos fazer HTTP do browser para Python local de forma simples,
-      // usamos uma abordagem baseada em arquivo ou localStorage para comunicação
-      
       if (filterModeEnabled !== enabled) {
         filterModeEnabled = enabled;
         
-        // Estratégia: modifica uma div oculta que o Python pode detectar via arquivo
         let signalDiv = document.getElementById('filterModeSignal');
         if (!signalDiv) {
           signalDiv = document.createElement('div');
@@ -228,7 +220,6 @@
           document.body.appendChild(signalDiv);
         }
         
-        // Atualiza o estado no HTML - Python pode detectar isso
         signalDiv.setAttribute('data-filter-active', enabled.toString());
         signalDiv.textContent = `FILTER_MODE:${enabled}:${Date.now()}`;
       }
@@ -236,9 +227,9 @@
 
     function extractTagsFromDOM() {
       const tagSet = new Set();
-      const elements = document.querySelectorAll("#logContainer [data-tags]");
+      const elements = document.querySelectorAll("#logContainer [tag]");
       elements.forEach((element) => {
-        const tags = element.getAttribute("data-tags").split(",");
+        const tags = element.getAttribute("tag").split(",");
         tags.forEach((tag) => tagSet.add(tag.trim()));
       });
       USED_TAGS = Array.from(tagSet).sort();
@@ -284,10 +275,9 @@
 
       const hasFilters = activeFilters.text.trim() !== "" || activeFilters.types.length > 0;
       
-      // NOTIFICA PYTHON SOBRE MODO FILTRO
       notifyFilterModeChange(hasFilters);
 
-      const lines = document.querySelectorAll("#logContainer [data-tags]");
+      const lines = document.querySelectorAll("#logContainer [tag]");
       const filteredContainer = document.getElementById("filteredContainer");
 
       const textRaw = (activeFilters.text || "").trim();
@@ -332,7 +322,7 @@
         line.innerHTML = originalHtml;
 
         const textContent = (line.textContent || line.innerText || "").toLowerCase();
-        const lineTags = (line.getAttribute("data-tags") || "").split(",").map((t) => t.trim()).filter(Boolean);
+        const lineTags = (line.getAttribute("tag") || "").split(",").map((t) => t.trim()).filter(Boolean);
 
         let textMatch = !hasTextFilter;
         if (hasTextFilter) {
@@ -346,16 +336,6 @@
         const typeMatch = !hasTypeFilter || activeFilters.types.some((t) => lineTags.includes(t));
 
         if (textMatch && typeMatch) {
-          if (hasTextFilter) {
-            let highlighted = originalHtml;
-            textFilters.forEach((f) => {
-              if (!f) return;
-              const regex = new RegExp(f.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&"), "gi");
-              highlighted = highlighted.replace(regex, (m) => `<span class="highlight">${m}</span>`);
-            });
-            line.innerHTML = highlighted;
-          }
-
           const wrapper = document.createElement("div");
           wrapper.className = "log-line";
           const copy = line.cloneNode(true);
@@ -373,10 +353,9 @@
       document.querySelectorAll("#typeFilterList input").forEach((cb) => (cb.checked = false));
       activeFilters = { text: "", types: [] };
       
-      // NOTIFICA PYTHON QUE FILTROS FORAM LIMPOS
       notifyFilterModeChange(false);
 
-      document.querySelectorAll("#logContainer [data-tags]").forEach((line) => {
+      document.querySelectorAll("#logContainer [tag]").forEach((line) => {
         if (line.hasAttribute("data-original-html")) {
           line.innerHTML = line.getAttribute("data-original-html");
         }
@@ -385,6 +364,28 @@
       document.getElementById("logContainer").style.display = "block";
       document.getElementById("filteredContainer").style.display = "none";
       document.getElementById("filteredContainer").innerHTML = "";
+    }
+
+    function resetView() {
+      document.querySelectorAll("#logContainer [tag]").forEach((line) => {
+        if (line.hasAttribute("data-original-html")) {
+          line.innerHTML = line.getAttribute("data-original-html");
+        }
+      });
+      
+      document.getElementById("logContainer").style.display = "block";
+      document.getElementById("filteredContainer").style.display = "none";
+      document.getElementById("filteredContainer").innerHTML = "";
+
+      notifyFilterModeChange(false);
+    }
+
+    function clearAllFilters() {
+      document.getElementById("textFilterInput").value = "";
+      document.querySelectorAll("#typeFilterList input").forEach((cb) => (cb.checked = false));
+      activeFilters = { text: "", types: [] };
+      
+      resetView();
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -413,12 +414,9 @@
           }
         }
       });
-      
-      // BOTÃO APLICAR - ATIVA MODO FILTRO
+
       applyBtn.addEventListener("click", applyFilters);
-      
-      // BOTÃO LIMPAR - DESATIVA MODO FILTRO  
-      clearBtn.addEventListener("click", clearFilters);
+      clearBtn.addEventListener("click", resetView);
       
       selectAllBtn.addEventListener("click", function () {
         document.querySelectorAll("#typeFilterList input").forEach((checkbox) => {
@@ -442,7 +440,6 @@
         event.stopPropagation();
       });
 
-      // ENTER PARA APLICAR FILTRO
       textFilterInput.addEventListener("keypress", function (e) {
         if (e.key === "Enter") {
           applyFilters();
@@ -450,5 +447,8 @@
       });
     });
   </script>
-</body>
-</html>
+
+  <div id="filteredContainer"></div>
+
+  <div id="logContainer">
+    <!-- CONTAINER_END --></div></body></html>
