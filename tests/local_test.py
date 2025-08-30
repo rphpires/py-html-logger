@@ -16,7 +16,6 @@ log_html_config(
 
 log('TEste novo log config')
 
-set_screen_trace()
 
 for i in range(1):
     print('=' * 30)

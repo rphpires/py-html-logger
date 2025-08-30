@@ -2,7 +2,7 @@ Write-Host "Starting deployment process..." -ForegroundColor Green
 
 # 1. Remove dist and py_html_logger.egg-info folders
 Write-Host "Cleaning up previous builds..." -ForegroundColor Yellow
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist, src\py_html_logger.egg-info
+Remove-Item -Recurse -Force -ErrorAction SilentlyContinue dist, py_html_logger.egg-info
 Write-Host "Cleanup completed!" -ForegroundColor Green
 
 # 2. Execute python -m build with real-time output

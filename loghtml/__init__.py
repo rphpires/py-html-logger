@@ -1,6 +1,7 @@
 import atexit
 import signal
 import sys
+import importlib.resources
 from .core import Logger
 
 # Create a singleton instance

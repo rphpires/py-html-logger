@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import threading
+import importlib
 from datetime import datetime
 
 from . import config
@@ -14,19 +15,15 @@ def get_local_timestamp():
 
 class LogWriter:
     def __init__(self):
-        # Create log directory if it doesn't exist
         os.makedirs(config.log_dir, exist_ok=True)
-
         self.trace_file = None
         self.__last_color = None
         self.last_flush = 0
         self.trace_lock = threading.Lock()
         self.current_size = 0
-
         self._remove_existing_footer()
 
     def _get_filename(self):
-        """Get the current filename based on configuration"""
         return os.path.join(config.log_dir, config.main_filename)
 
     def _remove_existing_footer(self):
@@ -45,18 +42,27 @@ class LogWriter:
                 pass
 
     def _load_template(self):
-        template_path = os.path.join(os.path.dirname(__file__), config.template_file)
+        # First try to load from package resources
         try:
-            with open(template_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                return content.replace('<!-- CONTAINER_END --></div></body></html>', '')
+            content = importlib.resources.read_text('loghtml', config.template_file, encoding='utf-8')
+            return content.replace('<!-- CONTAINER_END --></div></body></html>', '')
         except Exception:
-            return """<!DOCTYPE html>
+            # Fallback to direct file reading
+            try:
+                template_path = os.path.join(os.path.dirname(__file__), config.template_file)
+                with open(template_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    return content.replace('<!-- CONTAINER_END --></div></body></html>', '')
+            except Exception:
+                # Ultimate fallback to default template
+                return """<!DOCTYPE html PUBLIC "v0.1.14">
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 <style>
-font { white-space: pre; }
+font { white-space: pre; display: block; }
+body { color: white; background-color: black; }
 </style>
-<body bgcolor="black" text="white">
+<body>
+<div id="logContainer">
 """
 
     def _remove_extra_files(self, pattern, limit):
