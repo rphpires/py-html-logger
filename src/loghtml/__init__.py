@@ -65,7 +65,31 @@ def set_default_tag_color(value):
 
 
 def log_html_config(**kwargs):
-    """Configure logger settings"""
+    """
+    Change default configuration values.
+
+    Parameters:
+        log_dir (str): Directory where log files will be stored.
+                       Default: "logs".
+
+        main_filename (str): Name of the main HTML log file.
+                             Default: "log.html".
+
+        log_files_limit_count (int): Maximum number of log files allowed in the
+                                     directory before rotation starts.
+                                     Default: 30.
+
+        log_files_limit_size (int): Maximum allowed size (in bytes) for each
+                                    log file before rotation occurs.
+                                    Default: 3 MB.
+
+        template_file (str): Path to the HTML template file used to render logs.
+                             Default: "template.html".
+
+    Returns:
+        None: The function creates or updates log files in the log directory,
+              but does not return a value.
+    """
     from . import config as cfg
     for key, value in kwargs.items():
         if hasattr(cfg, key):
