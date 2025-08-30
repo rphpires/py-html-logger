@@ -1,4 +1,4 @@
-import htmllogger 
+import loghtml 
 
 
 def main():

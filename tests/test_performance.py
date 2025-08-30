@@ -6,7 +6,7 @@ import time
 # Para testar localmente, simula import da lib
 try:
     # Se estiver rodando do diretório da lib
-    from htmllogger import log, info, debug, warning, error, config, flush
+    from loghtml import log, info, debug, warning, error, config, flush
 except ImportError:
     print("Erro: não conseguiu importar htmllogger")
     print("Certifique-se que está no diretório correto")

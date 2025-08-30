@@ -8,7 +8,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-from htmllogger import log, info, debug, warning, error, report_exception, config
+from loghtml import log, info, debug, warning, error, report_exception, config
 
 log("teste")
 log("novo log linha")
