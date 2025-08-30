@@ -90,46 +90,6 @@ font { white-space: pre; }
         cmd += "} &"
         os.system(cmd)
 
-    def write_html(self, msg, color):
-        escape_table = str.maketrans({
-            '=>': '&rArr;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '\r\n': '\n'
-        })
-        msg = msg.translate(escape_table)
-
-        is_new_file = False
-        if not self.trace_file or self.current_size > self.log_files_limit_size:
-            if self.trace_file:
-                self.trace_file.write("<!-- CONTAINER_END -->\n</div>\n</body>\n</html>")
-                self.trace_file.close()
-                self.trace_file = None
-
-            trace_file_pattern = os.path.join(config.log_dir, 'trace_%s.html')
-            self._handle_new_log_file(self.filename, trace_file_pattern, get_local_timestamp())
-            is_new_file = True
-            self.__last_color = None
-
-        if not self.trace_file:
-            self.trace_file = open(self.filename, 'w', encoding='utf-8')
-            self.trace_file.write(self._load_template())
-
-        try:
-            self.trace_file.write(msg)
-            self.current_size += len(msg)
-        except Exception:
-            pass
-
-        try:
-            t = time.monotonic()
-            delta = t - self.last_flush
-            if delta > 2:
-                self.trace_file.flush()
-                self.last_flush = t
-        except Exception:
-            pass
-
     def write_direct(self, msg, color, tag):
         escape_table = str.maketrans({
             '<': '&lt;',
