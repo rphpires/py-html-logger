@@ -44,10 +44,18 @@ class LogWriter:
     def _load_template(self):
         # First try to load from package resources
         try:
-            content = importlib.resources.read_text('loghtml', config.template_file, encoding='utf-8')
+            # Use importlib.resources to access the template file
+            if hasattr(importlib.resources, 'files'):
+                # Python 3.9+ approach
+                with importlib.resources.files('loghtml').joinpath(config.template_file).open('r', encoding='utf-8') as f:
+                    content = f.read()
+            else:
+                # Fallback for older Python versions
+                content = importlib.resources.read_text('loghtml', config.template_file, encoding='utf-8')
+
             return content.replace('<!-- CONTAINER_END --></div></body></html>', '')
         except Exception:
-            # Fallback to direct file reading
+            # Fallback to direct file reading (for development)
             try:
                 template_path = os.path.join(os.path.dirname(__file__), config.template_file)
                 with open(template_path, 'r', encoding='utf-8') as f:
@@ -55,11 +63,12 @@ class LogWriter:
                     return content.replace('<!-- CONTAINER_END --></div></body></html>', '')
             except Exception:
                 # Ultimate fallback to default template
-                return """<!DOCTYPE html PUBLIC "v0.1.14">
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+                return """<!DOCTYPE html PUBLIC "v0.1.15">
+<meta charset="utf-8" />
 <style>
 font { white-space: pre; display: block; }
 body { color: white; background-color: black; }
+#logContainer { white-space: nowrap; overflow-x: auto; }
 </style>
 <body>
 <div id="logContainer">
