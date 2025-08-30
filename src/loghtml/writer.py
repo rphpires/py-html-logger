@@ -14,7 +14,7 @@ def get_local_timestamp():
 
 class LogWriter:
     def __init__(self):
-        self.filename = os.path.join(config.log_dir, config.main_filename)
+        # Create log directory if it doesn't exist
         os.makedirs(config.log_dir, exist_ok=True)
 
         self.trace_file = None
@@ -23,15 +23,17 @@ class LogWriter:
         self.trace_lock = threading.Lock()
         self.current_size = 0
 
-        self.log_files_limit_count = config.log_files_limit_count
-        self.log_files_limit_size = config.log_files_limit_size
-
         self._remove_existing_footer()
 
+    def _get_filename(self):
+        """Get the current filename based on configuration"""
+        return os.path.join(config.log_dir, config.main_filename)
+
     def _remove_existing_footer(self):
-        if os.path.exists(self.filename):
+        filename = self._get_filename()
+        if os.path.exists(filename):
             try:
-                with open(self.filename, 'r+', encoding='utf-8') as f:
+                with open(filename, 'r+', encoding='utf-8') as f:
                     content = f.read()
                     footer = "<!-- CONTAINER_END -->\n</div>\n</body>\n</html>"
                     if content.endswith(footer):
@@ -70,7 +72,7 @@ font { white-space: pre; }
 
     def _handle_new_log_file(self, file_name, file_pattern, fd):
         target = file_pattern % (fd)
-        limit_count = self.log_files_limit_count
+        limit_count = config.log_files_limit_count
 
         target += ".tmp"
         limit_count -= 1
@@ -105,15 +107,22 @@ font { white-space: pre; }
 
         self.trace_lock.acquire()
 
+        filename = self._get_filename()
         if not self.trace_file:
-            if os.path.exists(self.filename):
-                self.trace_file = open(self.filename, 'a', encoding='utf-8')
+            if os.path.exists(filename):
+                self.trace_file = open(filename, 'a', encoding='utf-8')
             else:
-                self.trace_file = open(self.filename, 'w', encoding='utf-8')
+                self.trace_file = open(filename, 'w', encoding='utf-8')
                 self.trace_file.write(self._load_template())
 
         try:
             self.trace_file.write(formated_msg)
+
+            # Check if we need to rotate the file
+            self.current_size += len(formated_msg)
+            if self.current_size >= config.log_files_limit_size:
+                self._rotate_file()
+
         except Exception:
             pass
 
@@ -126,6 +135,39 @@ font { white-space: pre; }
             pass
 
         self.trace_lock.release()
+
+    def _rotate_file(self):
+        """Rotate the log file if it exceeds the size limit"""
+        if self.trace_file:
+            self.trace_file.write("<!-- CONTAINER_END -->\n</div>\n</body>\n</html>")
+            self.trace_file.close()
+            self.trace_file = None
+
+            # Create a backup of the current file
+            import glob
+            from datetime import datetime
+
+            filename = self._get_filename()
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            backup_name = os.path.join(config.log_dir, f"{timestamp}_{config.main_filename}")
+
+            try:
+                os.rename(filename, backup_name)
+            except OSError:
+                pass
+
+            # Remove old files if exceeding the limit
+            try:
+                pattern = os.path.join(config.log_dir, f"*_{config.main_filename}")
+                files = glob.glob(pattern)
+                if len(files) > config.log_files_limit_count:
+                    files.sort()
+                    for f in files[:-config.log_files_limit_count]:
+                        os.remove(f)
+            except Exception:
+                pass
+
+            self.current_size = 0
 
     def close(self):
         if self.trace_file is None:

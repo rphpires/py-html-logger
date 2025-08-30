@@ -1,5 +1,4 @@
 
-_deploy.ps1
 _reinstall.ps1
 py_html_logger.egg-info/
 .flake8 

@@ -64,7 +64,7 @@ def set_default_tag_color(value):
     _logger.set_default_tag_color(value)
 
 
-def config(**kwargs):
+def log_html_config(**kwargs):
     """Configure logger settings"""
     from . import config as cfg
     for key, value in kwargs.items():

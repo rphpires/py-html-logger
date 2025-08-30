@@ -3,7 +3,6 @@ import traceback
 import time
 from datetime import datetime
 
-
 from .writer import LogWriter
 
 
@@ -33,6 +32,9 @@ class Logger:
             _color = 'White'
 
         self.writer.write_direct(str(msg), _color, tag)
+
+        if self.screen_trace:
+            print(str(msg))
 
     def log(self, message, color=None, tag="log"):
         self._write_message(message, color, tag)

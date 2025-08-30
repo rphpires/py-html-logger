@@ -8,6 +8,9 @@
     font-family: monospace, sans-serif;
     margin: 0;
     padding: 0;
+    height: 100vh; /* Make body take full viewport height */
+    display: flex;
+    flex-direction: column; /* Use flexbox for layout */
   }
   .filter-panel {
     display: none;
@@ -23,6 +26,7 @@
     width: 350px;
     max-height: 80vh;
     overflow-y: auto;
+    white-space: normal; /* Allow normal wrapping in filter panel */
   }
   .filter-tabs {
     display: flex;
@@ -79,9 +83,9 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    background-color: rgba(200, 200, 200, 0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     color: #333;
-    border: none;
+    border: 3px solid #2bd331; /* Add thin green border */
     border-radius: 8px;
     width: 50px;
     height: 50px;
@@ -89,13 +93,17 @@
     cursor: pointer;
     z-index: 1000;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, border-color 0.3s; /* Add border transition */
     display: flex;
     justify-content: center;
     align-items: center;
   }
+  /* .filter-btn:hover {
+    background-color: rgba(180, 180, 180, 0.9);
+  } */
   .filter-btn:hover {
     background-color: rgba(180, 180, 180, 0.9);
+    border-color: #45a049; /* Slightly darker green on hover */
   }
   .highlight {
     background-color: yellow;
@@ -148,9 +156,15 @@
     margin: 0;
   }
   font { 
-    white-space: pre-wrap;
-    word-break: break-all;
+    white-space: pre;
     display: block;
+  }
+  #logContainer {
+    flex: 1; /* Take up remaining space */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    white-space: nowrap; /* Prevent wrapping */
+    align-self: flex-start; /* Align to top instead of stretching */
+    width: 100%; /* Ensure full width */
   }
 </style>
 

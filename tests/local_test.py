@@ -1,0 +1,27 @@
+# benchmark_test.py
+import time
+import random
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+from loghtml import *
+
+log_html_config(
+    main_filename='arquivo.html',
+    log_files_limit_size=100_000,
+    log_files_limit_count=10
+)
+
+log('TEste novo log config')
+
+
+
+for i in range(1):
+    print('=' * 30)
+    log(f'{i} - asdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfk')
+    log(f'{i} - asdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfk')
+    log(f'{i} - asdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfk')
+    log(f'{i} - asdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfk')
+    log(f'{i} - asdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfkasdasdasjsjfhdgbjsdfhsjdgfhsdfskjdhfskjdlhfskdjfhksjdfhshdfk')
